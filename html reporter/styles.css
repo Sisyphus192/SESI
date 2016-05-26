@@ -1,0 +1,290 @@
+body
+{
+font-family: sans-serif;
+}
+
+div.left
+{
+ background-color:#F0F8FF;
+ width:20%;
+ height:96%;
+ float:left;
+ margin-right: 10px;
+ position: fixed;
+ overflow:auto;
+}
+div.content
+{
+float: right; 
+padding: 10px;
+width: 75%;
+}
+
+span.topmost
+{
+	font-size:250%;
+	font-weight:bold;
+}
+
+table
+{
+border-collapse:collapse;
+}
+
+td.starHead
+{
+	text-align:center;
+    border:1px solid grey;
+	background-color:LightCyan;
+	font-weight:bold;
+}
+
+td.starCell
+{
+	text-align:center;
+    border:1px solid grey;
+}
+
+td.starTableTopper
+{
+	font-size:150%;
+	font-weight:bold;
+	padding: 5px;
+}
+
+span.orbiting{
+	font-size:150%;
+	font-weight:bold;
+}
+
+tr.starTable
+{
+border-right: 1px solid grey;
+border-left: 1px solid grey;
+}
+tr.Table
+{
+border-right: 1px solid grey;
+border-left: 1px solid grey;
+}
+td.starTableTop
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#E6E65C;	
+	padding: 5px;
+	
+}
+
+td.starTableTopEnd
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#E6E65C;	
+	padding: 5px;
+	text-align:right;
+}
+
+
+td.starTableHead{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:PaleGoldenRod;	
+	width: 17%;		
+}
+
+td.starTableData{
+	border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	padding-left:10px;
+	padding-right:10px;
+	
+}
+td.baryTableTop
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:LightBlue;	
+	padding: 5px;
+}
+
+td.baryTableTopEnd
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:LightBlue;	
+	padding: 5px;
+	text-align:right;
+}
+
+
+td.baryTableHead{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:LightCyan;		
+	width: 17%;	
+}
+
+td.baryTableData{
+	border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	padding-left:10px;
+	padding-right:10px;
+	
+}
+
+td.beltTableTop
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:Chocolate;	
+	padding: 5px;
+}
+
+td.beltTableTopEnd
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:Chocolate;	
+	padding: 5px;
+	text-align:right;
+}
+
+
+td.beltTableHead{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#E09662;	
+	width: 17%;
+}
+
+td.beltTableData{
+	border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	padding-left:10px;
+	padding-right:10px;
+	
+}
+td.beltTableSectionHeader
+{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:Chocolate;		
+	font-size:120%;
+}
+
+td.beltTableSubHead{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#E09662;
+}
+
+tr.planetTable{
+border-right: 1px solid grey;
+border-left: 1px solid grey;
+}
+tr.moonTable{
+border-right: 1px solid grey;
+border-left: 1px solid grey;
+}
+tr.moonTable:hover{
+border-right: 1px solid grey;
+border-left: 1px solid grey;
+background-color:yellow;
+}
+
+td.planetTableHead{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#B2E0C2;
+	width: 17%;	
+}
+
+td.planetTableSubHead{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#B2E0C2;
+}
+
+td.planetTableTime{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#B2E0C2;
+	text-align:right;	
+}
+
+td.planetTableData{
+	border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	padding-left:10px;
+	padding-right:10px;	
+}
+
+td.planetTableTop
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#66C285;	
+	padding: 5px;
+}
+td.planetTableTopEnd
+{
+	font-size:150%;
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#66C285;	
+	padding: 5px;
+	text-align:right;
+}
+
+td.planetTableTopper
+{
+	font-size:150%;
+	font-weight:bold;
+}
+
+td.planetTableSectionHeader
+{
+	font-weight:bold;
+    border-bottom:1px solid grey;
+	border-top:1px solid grey;
+	background-color:#66C285;		
+	font-size:120%;
+}
+
+table.tempTable
+{
+	text-align:center;
+	width: 100%;
+	border-bottom:1px solid grey;
+}
+
+table.general
+{
+	width: 85%
+	
+}
+
