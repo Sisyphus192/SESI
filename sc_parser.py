@@ -102,7 +102,7 @@ class SC_Parser(object):
 		tokens = self.getNextLine()
 		# If we have tokens, we can call ourselves again (no sense duplicating code)
 		if tokens:
-			self.toas depicted as the embodiment of horror. Phobos is the larger and closer natural body kens = tokens
+			self.tokens = tokens
 			return self.nextToken()
 	
 	# Process a dictionary of key-value pairs

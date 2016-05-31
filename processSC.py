@@ -1,6 +1,9 @@
 import math
 import copy
 from decimal import *
+from sc_parser import SC_Parser
+import os
+import re
 
 class System:
     def __init__(self, parsed):
@@ -16,8 +19,6 @@ class System:
                 self.stellar_masses += i['data']['MassSol']
         return self.stellar_masses
 
-    def total_non_stellar_masf __init__(self, parsed):
-        self.objects = parsed
     def list_objects(self):
         for i in self.objects:
             print(i['name'])
@@ -150,8 +151,8 @@ class System:
 
     def year_to_seconds(self, year):
         return Decimal(year) * 31557600
-    
-    def get_rotation_period(ses(self):
+
+    def get_rotation_period(self):
         self.non_stellar_masses = 0
         for i in self.objects:
             if i['type'] != "Star" and i['type'] != "Barycenter":
@@ -272,13 +273,13 @@ class System:
 
     def year_to_seconds(self, year):
         return Decimal(year) * 31557600
-    
+
     def get_rotation_period(self, astro_object):
         if "TidalLocked" in astro_object['data']:
-            return year_to_seconds(astro_object['data']['Orbit']['Period'])
+            return self.year_to_seconds(astro_object['data']['Orbit']['Period'])
         else:
             return Decimal(astro_object['data']['RotationPeriod']) * 3600
-    
+
     def is_tidally_locked(self, astro_object):
         if "TidalLocked" in astro_object['data']:
             return "true"
@@ -301,6 +302,10 @@ class System:
                     astro_object = i
         return astro_object['name'], astro_object['type'], density
 
+    def format_name(self, name):
+        non_decimal = re.compile(r'[^\d.]+')
+        return non_decimal.sub('', name)
+
     def get_star_classification(self, astro_object):
         color = ''
         size = ''
@@ -311,144 +316,7 @@ class System:
         elif "A" in astro_object['data']["Class"]:
             color = "White"
         elif "F" in astro_object['data']["Class"]:
-            color = "Yellow white"f __init__(self, parsed):
-        self.objects = parsed
-    def list_objects(self):
-        for i in self.objects:
-            print(i['name'])
-
-    def total_stellar_masses(self):
-        self.stellar_masses = 0
-        for i in self.objects:
-            if i['type'] == 'Star':
-                self.stellar_masses += i['data']['MassSol']
-        return self.stellar_masses
-
-    def total_non_stellar_masses(self):
-        self.non_stellar_masses = 0
-        for i in self.objects:
-            if i['type'] != "Star" and i['type'] != "Barycenter":
-                self.non_stellar_masses += float(i['data']['Mass'])
-        return self.non_stellar_masses
-
-    def num_of_types(self):
-        self.types = {}
-        for i in self.objects:
-            if i['type'] in self.types.keys():
-                self.types[i['type']] += 1
-            else:
-                self.types[i['type']] = 1
-        return self.types
-
-    def life(self):
-        self.has_life = False
-        for i in self.objects:
-            if i['data']['Life'] != False:
-                self.has_life = True
-        return self.has_life
-
-    def num_of_planet_classes(self):
-        self.planet_classes = {}
-        for i in self.objects:
-            if i['type'] == 'Planet' or i['type'] == 'DwarfPlanet':
-                if i['data']['Class'] in self.planet_classes.keys():
-                    self.planet_classes[i['data']['Class']] += 1
-                else:
-                    self.planet_classes[i['data']['Class']] = 1
-        return self.planet_classes
-
-    def num_of_moon_classes(self):
-        self.moon_classes = {}
-        for i in self.objects:
-            if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
-                if i['data']['Class'] in self.moon_classes.keys():
-                    self.moon_classes[i['data']['Class']] += 1
-                else:
-                    self.moon_classes[i['data']['Class']] = 1
-        return self.moon_classes
-
-    def largest_planet(self):
-        radius = 0.0
-        planet = ''
-        for i in self.objects:
-            if i['type'] == 'Planet' or i['type'] == 'DwarfPlanet':
-                if float(i['data']['Radius']) > radius:
-                    radius = float(i['data']['Radius'])
-                    planet = i
-        return planet['name'], planet['type'], radius
-
-    def smallest_planet(self):
-        radius = 9e+99
-        planet = ''
-        for i in self.objects:
-            if i['type'] == 'Planet' or i['type'] == 'DwarfPlanet':
-                if float(i['data']['Radius']) < radius:
-                    radius = float(i['data']['Radius'])
-                    planet = i
-        return planet['name'], planet['type'], radius
-
-    def largest_terrestrial_planet(self):
-        radius = 0.0
-        planet = ''
-        for i in self.objects:
-            if i['type'] == 'Planet' or i['type'] == 'DwarfPlanet':
-                if i['data']['Class'] != 'GasGiant' and i['data']['Class'] != 'IceGiant':
-                    if float(i['data']['Radius']) > radius:
-                        radius = float(i['data']['Radius'])
-                        planet = i
-        return planet['name'], planet['type'], radius
-
-    def most_massive_planet(self):
-        mass = 0.0
-        planet = ''
-        for i in self.objects:
-            if i['type'] == 'Planet' or i['type'] == 'DwarfPlanet':
-                if float(i['data']['Mass']) > mass:
-                    mass = float(i['data']['Mass'])
-                    planet = i
-        return planet['name'], planet['type'], mass
-
-    def least_massive_planet(self):
-        mass = 9e+99
-        planet = ''
-        for i in self.objects:
-            if i['type'] == 'Planet' or i['type'] == 'DwarfPlanet':
-                if float(i['data']['Mass']) < mass:
-                    mass = float(i['data']['Mass'])
-                    planet = i
-        return planet['name'], planet['type'], mass
-
-    def largest_moon(self):
-        radius = 0.0
-        moon = ''
-        for i in self.objects:
-            if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
-                if float(i['data']['Radius']) > radius:
-                    radius = float(i['data']['Radius'])
-                    moon = i
-        return moon['name'], moon['type'], radius
-
-    def mass_to_kg(self, astro_object):
-        if "MassSol" in astro_object['data'].keys():
-            return Decima(1.988435E+30) * Decimal(astro_object['data']['MassSol'])
-        else:
-            return Decimal(5.9721986E+24) * Decimal(astro_object['data']['Mass'])
-
-    def get_rotation_period(
-
-    def radius_to_meters(self, astro_object):
-        if "RadSol" in astro_object['data'].keys():
-            return Decimal(6.955E+8) * Decimal(astro_object['data']["RadSol"])
-        else:
-            return 1000 * Decimal(astro_object['data']['Radius'])
-
-    def AU_to_meters(self, AU):
-        return Decimal(AU) * Decimal(1.495978707e+11)
-
-    def year_to_seconds(self, year):
-        return Decimal(year) * 31557600
-    
-    def get_rotation_period(
+            color = "Yellow white"
         elif "G" in astro_object['data']["Class"]:
             color = "Yellow"
         elif "K" in astro_object['data']["Class"]:
@@ -513,34 +381,45 @@ class System:
     def konvert_to_kerbal(self):
         template = ''
         for i in self.objects:
-            if i['name'] == "8":
-                with open("iceworld.cfg", "r") as in_file:
+            if i['type'] != 'Star':
+                with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
                     template = in_file.read()
-                with open(i['name']+'.cfg', 'wt') as out_file:
+                if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
+                    path = "RealSolarSystem/RSSKopernicus/" + i['data']['ParentBody'] +'/'
+                elif i['type'] == 'Asteroid':
+                    path = "RealSolarSystem/RSSKopernicus/Asteroids/"
+                elif i['type'] == 'Comet':
+                    path = "RealSolarSystem/RSSKopernicus/Comets/"
+                else:
+                    path = "RealSolarSystem/RSSKopernicus/" + i['name'] + '/'
+
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                with open(path + i['name']+'.cfg', 'wt') as out_file:
                     template = template.format(
-                                        name = i['name'],
-                                        index = int(i['name'])*50,
-                                        ParentBody = i['data']['ParentBody'],
-                                        SemiMajorAxis = self.AU_to_meters(i['data']['Orbit']['SemiMajorAxis']),
-                                        Eccentricity = i['data']['Orbit']['Eccentricity'],
-                                        Inclination = i['data']['Orbit']['Inclination'],
-                                        MeanAnomaly = i['data']['Orbit']['MeanAnomaly'],
-                                        AscendingNode = i['data']['Orbit']['AscendingNode'],
-                                        ArgOfPericenter = i['data']['Orbit']['ArgOfPericenter'],
-                                        red = i['data']['Color'][0],
-                                        green = i['data']['Color'][1],
-                                        blue = i['data']['Color'][2],
-                                        description = 'test',
-                                        Radius = self.radius_to_meters(i),
-                                        Mass = self.mass_to_kg(i),
-                                        RotationPeriod = self.get_rotation_period(i),
-                                        TidalLocked = self.is_tidally_locked(i),
-                                        HomeWorld = "false")
+                                    name = i['name'],
+                                    index = int(float(self.format_name(i['name']))*10),
+                                    ParentBody = i['data']['ParentBody'],
+                                    SemiMajorAxis = self.AU_to_meters(i['data']['Orbit']['SemiMajorAxis']),
+                                    Eccentricity = i['data']['Orbit']['Eccentricity'],
+                                    Inclination = i['data']['Orbit']['Inclination'],
+                                    MeanAnomaly = i['data']['Orbit']['MeanAnomaly'],
+                                    AscendingNode = i['data']['Orbit']['AscendingNode'],
+                                    ArgOfPericenter = i['data']['Orbit']['ArgOfPericenter'],
+                                    red = i['data']['Color'][0],
+                                    green = i['data']['Color'][1],
+                                    blue = i['data']['Color'][2],
+                                    description = 'test',
+                                    Radius = self.radius_to_meters(i),
+                                    Mass = self.mass_to_kg(i),
+                                    RotationPeriod = self.get_rotation_period(i),
+                                    TidalLocked = self.is_tidally_locked(i),
+                                    HomeWorld = "false")
                     out_file.write(template)
 
 
 
-parser = SC_Parser("Proxima.sc")
+parser = SC_Parser("systems/Proxima.sc")
 system = System(parser.process())
 system.konvert_to_kerbal()
 header = """
