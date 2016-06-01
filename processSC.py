@@ -401,10 +401,10 @@ class System:
 
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with open(path + self.format_name(i['name']) + '.cfg', 'wt') as out_file:
+                with open(path + i['name'] + '.cfg', 'wt') as out_file:
                     template = template.format(
                                     name = i['name'],
-                                    index = int(float(self.format_name(i['name']))*10),
+                                    index = int(float(self.format_name(i['name']))*100),
                                     ParentBody = self.check_parent(i['data']['ParentBody']),
                                     SemiMajorAxis = self.AU_to_meters(i['data']['Orbit']['SemiMajorAxis']),
                                     Eccentricity = i['data']['Orbit']['Eccentricity'],
