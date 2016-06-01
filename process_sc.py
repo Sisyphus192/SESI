@@ -38,7 +38,7 @@ Gas Giants will look the same, etc."""
 from decimal import Decimal
 import os
 import re
-from sc_parser import SC_Parser
+from sc_parser import SCParser
 
 def mass_to_kg(astro_object):
     """Takes an astronomical object and returns it's mass in kg. Will check
@@ -135,6 +135,13 @@ def konvert_to_kerbal(objects):
                     HomeWorld="false")
                 out_file.write(template)
 
-PARSER = SC_Parser("systems/Proxima.sc")
-OBJECTS = PARSER.process()
-konvert_to_kerbal(OBJECTS)
+def main():
+    """Even a file meant to be used as a script should be importable and a mere
+    import should not have the side effect of executing the script's main functionality.
+    The main functionality should be in a main() function."""
+    parser = SCParser("systems/Proxima.sc")
+    objects = parser.process()
+    konvert_to_kerbal(objects)
+
+if __name__ == '__main__':
+    main()
