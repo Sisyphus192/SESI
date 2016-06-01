@@ -306,6 +306,12 @@ class System:
         non_decimal = re.compile(r'[^\d.]+')
         return non_decimal.sub('', name)
 
+    def check_parent(self, parentBody):
+        if parentBody == "Proxima":
+            return "Sun"
+        else:
+            return parentBody
+
     def get_star_classification(self, astro_object):
         color = ''
         size = ''
@@ -395,11 +401,11 @@ class System:
 
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with open(path + i['name']+'.cfg', 'wt') as out_file:
+                with open(path + self.format_name(i['name']) + '.cfg', 'wt') as out_file:
                     template = template.format(
                                     name = i['name'],
                                     index = int(float(self.format_name(i['name']))*10),
-                                    ParentBody = i['data']['ParentBody'],
+                                    ParentBody = self.check_parent(i['data']['ParentBody']),
                                     SemiMajorAxis = self.AU_to_meters(i['data']['Orbit']['SemiMajorAxis']),
                                     Eccentricity = i['data']['Orbit']['Eccentricity'],
                                     Inclination = i['data']['Orbit']['Inclination'],
