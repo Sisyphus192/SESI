@@ -386,7 +386,7 @@ class System:
 
     def konvert_to_kerbal(self):
         template = ''
-        for i in self.objects:
+        for idx, i in enumerate(self.objects):
             if i['type'] != 'Star':
                 with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
                     template = in_file.read()
@@ -404,7 +404,7 @@ class System:
                 with open(path + i['name'] + '.cfg', 'wt') as out_file:
                     template = template.format(
                                     name = i['name'],
-                                    index = int(float(self.format_name(i['name']))*100),
+                                    index = idx + 3,
                                     ParentBody = self.check_parent(i['data']['ParentBody']),
                                     SemiMajorAxis = self.AU_to_meters(i['data']['Orbit']['SemiMajorAxis']),
                                     Eccentricity = i['data']['Orbit']['Eccentricity'],
