@@ -38,6 +38,7 @@ Gas Giants will look the same, etc."""
 from decimal import Decimal
 import os
 import re
+import argparse
 from sc_parser import SCParser
 
 def mass_to_kg(astro_object):
@@ -94,54 +95,84 @@ def check_parent(parent_body):
     else:
         return parent_body
 
-def konvert_to_kerbal(objects):
+def konvert_to_kerbal(objects, args):
     """Loads object template and formats with the correct values to create a
         working object in KSP"""
     template = ''
     for idx, i in enumerate(objects):
-        if i['type'] != 'Star':
-            with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
-                template = in_file.read()
-            if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
-                path = "RealSolarSystem/RSSKopernicus/" + i['data']['ParentBody'] +'/'
-            elif i['type'] == 'Asteroid':
-                path = "RealSolarSystem/RSSKopernicus/Asteroids/"
-            elif i['type'] == 'Comet':
-                path = "RealSolarSystem/RSSKopernicus/Comets/"
-            else:
-                path = "RealSolarSystem/RSSKopernicus/" + i['name'] + '/'
 
+        """ This handles any stars in the system, they have they're own special
+        .cfg file, and currently only have two variables, mass & radius
+        ***Does not support multistar systems yet***"""
+        if i['type'] == 'Star':
+            with open("cfg templates/star.cfg", 'r') as in_file:
+                template = in_file.read()
+            path = "RealSolarSystem/RSSKopernicus/"
             if not os.path.exists(path):
                 os.makedirs(path)
-            with open(path + i['name'] + '.cfg', 'wt') as out_file:
-                template = template.format(
-                    name=i['name'],
-                    index=idx + 3,
-                    ParentBody=check_parent(i['data']['ParentBody']),
-                    SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
-                    Eccentricity=i['data']['Orbit']['Eccentricity'],
-                    Inclination=i['data']['Orbit']['Inclination'],
-                    MeanAnomaly=i['data']['Orbit']['MeanAnomaly'],
-                    AscendingNode=i['data']['Orbit']['AscendingNode'],
-                    ArgOfPericenter=i['data']['Orbit']['ArgOfPericenter'],
-                    red=i['data']['Color'][0],
-                    green=i['data']['Color'][1],
-                    blue=i['data']['Color'][2],
-                    description='test',
-                    Radius=radius_to_meters(i),
-                    Mass=mass_to_kg(i),
-                    RotationPeriod=get_rotation_period(i),
-                    TidalLocked=is_tidally_locked(i),
-                    HomeWorld="false")
+            with open(path + 'Sun.cfg', 'wt') as out_file:
+                template = template.format(Radius=radius_to_meters(i), Mass=mass_to_kg(i))
                 out_file.write(template)
+            continue
+        """Handles any remaining objects in the system
+        ***Barycenter's are not yet supported***"""
+        if i["type"] == "Asteroid":
+            num = format_name(i["name"])
+            if int(num) > int(args.num_asteroids):
+                continue
 
-def main():
+        if i["type"] == "Comet":
+            num = format_name(i["name"])
+            if int(num) > int(args.num_comets):
+                continue
+
+        with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
+            template = in_file.read()
+        if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
+            path = "RealSolarSystem/RSSKopernicus/" + i['data']['ParentBody'] +'/'
+        elif i['type'] == 'Asteroid':
+            path = "RealSolarSystem/RSSKopernicus/Asteroids/"
+        elif i['type'] == 'Comet':
+            path = "RealSolarSystem/RSSKopernicus/Comets/"
+        else:
+            path = "RealSolarSystem/RSSKopernicus/" + i['name'] + '/'
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with open(path + i['name'] + '.cfg', 'wt') as out_file:
+            template = template.format(
+                name=i['name'],
+                index=idx + 3,
+                ParentBody=check_parent(i['data']['ParentBody']),
+                SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
+                Eccentricity=i['data']['Orbit']['Eccentricity'],
+                Inclination=i['data']['Orbit']['Inclination'],
+                MeanAnomaly=i['data']['Orbit']['MeanAnomaly'],
+                AscendingNode=i['data']['Orbit']['AscendingNode'],
+                ArgOfPericenter=i['data']['Orbit']['ArgOfPericenter'],
+                red=i['data']['Color'][0],
+                green=i['data']['Color'][1],
+                blue=i['data']['Color'][2],
+                description='test',
+                Radius=radius_to_meters(i),
+                Mass=mass_to_kg(i),
+                RotationPeriod=get_rotation_period(i),
+                TidalLocked=is_tidally_locked(i),
+                HomeWorld="false")
+            out_file.write(template)
+
+def main(args):
     """Even a file meant to be used as a script should be importable and a mere
     import should not have the side effect of executing the script's main functionality.
     The main functionality should be in a main() function."""
-    parser = SCParser("systems/Proxima.sc")
-    objects = parser.process()
-    konvert_to_kerbal(objects)
+    sc_parsed = SCParser("systems/" + args.sc_file)
+    objects = sc_parsed.process()
+    konvert_to_kerbal(objects, args)
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description="Select .sc file and number of asteroids and comets to include")
+    parser.add_argument("-s", dest="sc_file", action="store", help="Filename of system to parse from Space Engine")
+    parser.add_argument("-a", dest="num_asteroids", action="store", help="Number of asteroids to include in system")
+    parser.add_argument("-c", dest="num_comets", action="store", help="Number of comets to include in system")
+    args=parser.parse_args()
+    main(args)
