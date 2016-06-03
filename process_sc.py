@@ -99,6 +99,12 @@ def konvert_to_kerbal(objects, args):
     """Loads object template and formats with the correct values to create a
         working object in KSP"""
     template = ''
+    sigma_binary = ''
+    with open("cfg templates/SigmaBinary.cfg", 'r') as in_file:
+        simga_binary = in_file.read()
+    rotation_period = ''
+    with open("cfg templates/RotationPeriod.cfg", 'r') as in_file:
+        rotation_period = in_file.read()
     for idx, i in enumerate(objects):
 
         # This handles any stars in the system, they have they're own special
