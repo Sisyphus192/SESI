@@ -90,7 +90,7 @@ def format_name(name):
 def check_parent(parent_body):
     """ Fixes parent body of objects from "Proxima" to "Sun", used for testing
         will be obsolete once I figure out how to rename "Sun" """
-    if parent_body == "Proxima":
+    if parent_body == "Proxima" or parent_body == "Barnard's Star":
         return "Sun"
     else:
         return parent_body
@@ -98,17 +98,21 @@ def check_parent(parent_body):
 def konvert_to_kerbal(objects, args):
     """Loads object template and formats with the correct values to create a
         working object in KSP"""
+    # Load cfg templates for any barycenters that may be in the systems
     template = ''
     sigma_binary = ''
+    sigma_binary_cfg = ''
+    bin_idx = -10
     with open("cfg templates/SigmaBinary.cfg", 'r') as in_file:
-        simga_binary = in_file.read()
+        sigma_binary_cfg = in_file.read()
     rotation_period = ''
+    rotation_period_cfg = ''
     with open("cfg templates/RotationPeriod.cfg", 'r') as in_file:
-        rotation_period = in_file.read()
-    for idx, i in enumerate(objects):
+        rotation_period_cfg = in_file.read()
 
+    for idx, i in enumerate(objects):
         # This handles any stars in the system, they have they're own special
-        # .cfg file, and currently only have two variables, mass & radius
+        # .cfg file
         # ***Does not support multistar systems yet***
         if i['type'] == 'Star':
             with open("cfg templates/star.cfg", 'r') as in_file:
@@ -126,18 +130,36 @@ def konvert_to_kerbal(objects, args):
                     blue=i['data']['Color'][2])
                 out_file.write(template)
             continue
-        # Handles any remaining objects in the system
-        # ***Barycenter's are not yet supported***
+
+        # Check to see if we've exceeded our asteroid/comet quota
         if i["type"] == "Asteroid":
             num = format_name(i["name"])
             if int(num) > int(args.num_asteroids):
                 continue
-
         if i["type"] == "Comet":
             num = format_name(i["name"])
             if int(num) > int(args.num_comets):
                 continue
 
+        # Check for barycenters
+        if i["type"] == "Barycenter":
+            objects[idx+2]['data']['Orbit']['SemiMajorAxis'] +=\
+                objects[idx+1]['data']['Orbit']['SemiMajorAxis']
+            objects[idx+1]['data']['Orbit'] = i['data']['Orbit']
+            objects[idx+1]['data']['ParentBody'] = "Sun"
+            objects[idx+2]['data']['ParentBody'] = objects[idx+1]['name']
+            rotation_period = rotation_period_cfg.format(
+                    name_minor=objects[idx+2]['name'],
+                    name_major=objects[idx+1]['name'])
+            bin_idx = idx
+            continue
+
+        if idx == bin_idx + 2:
+            sigma_binary = sigma_binary_cfg.format(description='test')
+            print(sigma_binary)
+
+
+        # Configure path
         with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
             template = in_file.read()
         if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
@@ -148,13 +170,18 @@ def konvert_to_kerbal(objects, args):
             path = "RealSolarSystem/RSSKopernicus/Comets/"
         else:
             path = "RealSolarSystem/RSSKopernicus/" + i['name'] + '/'
-
         if not os.path.exists(path):
             os.makedirs(path)
+
+        if idx == bin_idx + 1:
+            with open(path + "RotationPeriod.cfg", 'wt') as out_file:
+                out_file.write(rotation_period)
+
         with open(path + i['name'] + '.cfg', 'wt') as out_file:
             template = template.format(
                 name=i['name'],
                 index=idx + 3,
+                SigmaBinary = sigma_binary,
                 ParentBody=check_parent(i['data']['ParentBody']),
                 SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
                 Eccentricity=i['data']['Orbit']['Eccentricity'],
@@ -172,6 +199,9 @@ def konvert_to_kerbal(objects, args):
                 TidalLocked=is_tidally_locked(i),
                 HomeWorld="false")
             out_file.write(template)
+
+        if idx == bin_idx + 2:
+            sigma_binary = ''
 
 def main(args):
     """Even a file meant to be used as a script should be importable and a mere
