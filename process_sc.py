@@ -95,6 +95,29 @@ def check_parent(parent_body):
     else:
         return parent_body
 
+def create_system_barycenter():
+    """When I implement support for n-nary star systems they will be
+    initiallized here"""
+    pass
+
+def create_star(star):
+    with open("cfg templates/star.cfg", 'r') as in_file:
+        template = in_file.read()
+    path = "RealSolarSystem/RSSKopernicus/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+    with open(path + 'Sun.cfg', 'wt') as out_file:
+        template = template.format(
+            Radius=radius_to_meters(i),
+            Mass=mass_to_kg(i),
+            Luminosity=i['data']['Luminosity'],
+            red=i['data']['Color'][0],
+            green=i['data']['Color'][1],
+            blue=i['data']['Color'][2])
+        out_file.write(template)
+
+
+
 def konvert_to_kerbal(objects, args):
     """Loads object template and formats with the correct values to create a
         working object in KSP"""
@@ -111,24 +134,17 @@ def konvert_to_kerbal(objects, args):
         rotation_period_cfg = in_file.read()
 
     for idx, i in enumerate(objects):
-        # This handles any stars in the system, they have they're own special
-        # .cfg file
-        # ***Does not support multistar systems yet***
+        # If the first object is a Barycenter, then we know this is a N-nary
+        # star sytem which is currently not supported so throw an error. We
+        # check for it in the loop because later the logic to support N-nary
+        # star sytems will go here anyways.
+        if objects[0]['type'] == "Barycenter":
+            print("This is an N-nary star system and cannot be konverted to a KSP system (yet)")
+            break
+
+        # Create star (not setup to handle more than one star)
         if i['type'] == 'Star':
-            with open("cfg templates/star.cfg", 'r') as in_file:
-                template = in_file.read()
-            path = "RealSolarSystem/RSSKopernicus/"
-            if not os.path.exists(path):
-                os.makedirs(path)
-            with open(path + 'Sun.cfg', 'wt') as out_file:
-                template = template.format(
-                    Radius=radius_to_meters(i),
-                    Mass=mass_to_kg(i),
-                    Luminosity=i['data']['Luminosity'],
-                    red=i['data']['Color'][0],
-                    green=i['data']['Color'][1],
-                    blue=i['data']['Color'][2])
-                out_file.write(template)
+            create_star(i)
             continue
 
         # Check to see if we've exceeded our asteroid/comet quota
@@ -149,8 +165,8 @@ def konvert_to_kerbal(objects, args):
             objects[idx+1]['data']['ParentBody'] = "Sun"
             objects[idx+2]['data']['ParentBody'] = objects[idx+1]['name']
             rotation_period = rotation_period_cfg.format(
-                    name_minor=objects[idx+2]['name'],
-                    name_major=objects[idx+1]['name'])
+                name_minor=objects[idx+2]['name'],
+                name_major=objects[idx+1]['name'])
             bin_idx = idx
             continue
 
@@ -181,7 +197,7 @@ def konvert_to_kerbal(objects, args):
             template = template.format(
                 name=i['name'],
                 index=idx + 3,
-                SigmaBinary = sigma_binary,
+                SigmaBinary=sigma_binary,
                 ParentBody=check_parent(i['data']['ParentBody']),
                 SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
                 Eccentricity=i['data']['Orbit']['Eccentricity'],
