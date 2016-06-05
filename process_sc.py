@@ -37,7 +37,7 @@ Gas Giants will look the same, etc."""
 
 from decimal import Decimal
 import os
-import re
+import math
 import argparse
 from sc_parser import SCParser
 
@@ -116,7 +116,18 @@ def create_star(star):
             blue=i['data']['Color'][2])
         out_file.write(template)
 
+def get_star_flux(star):
+    fluxM = star['data']['Teff']**4 * 5.670367E-8
+    area = 4 * math.pi * radius_to_meters(star)**2
+    return fluxM * area
 
+def get_stellar_constant(star_flux, distance):
+    area = 4 * math.pi * distance**2
+    return star_flux / area
+
+def get_planet_temp(star_constant, albedo, greenhouse):
+    flux_absorbed = (star_constant / 4) * (1 - albedo)
+    return (flux_absorbed / 5.670367E-8)**0.25 + greenhouse + 2.725
 
 def konvert_to_kerbal(objects, args):
     """Loads object template and formats with the correct values to create a
