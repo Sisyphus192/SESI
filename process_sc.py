@@ -37,6 +37,7 @@ Gas Giants will look the same, etc."""
 
 from decimal import Decimal
 import os
+import re
 import math
 import argparse
 from sc_parser import SCParser
@@ -108,26 +109,107 @@ def create_star(star):
         os.makedirs(path)
     with open(path + 'Sun.cfg', 'wt') as out_file:
         template = template.format(
-            Radius=radius_to_meters(i),
-            Mass=mass_to_kg(i),
-            Luminosity=i['data']['Luminosity'],
-            red=i['data']['Color'][0],
-            green=i['data']['Color'][1],
-            blue=i['data']['Color'][2])
+            Radius=radius_to_meters(star),
+            Mass=mass_to_kg(star),
+            Luminosity=star['data']['Luminosity'],
+            red=star['data']['Color'][0],
+            green=star['data']['Color'][1],
+            blue=star['data']['Color'][2])
         out_file.write(template)
 
-def get_star_flux(star):
-    fluxM = star['data']['Teff']**4 * 5.670367E-8
-    area = 4 * math.pi * radius_to_meters(star)**2
-    return fluxM * area
+def luminosity_to_watts(star):
+    return Decimal(star['data']['Luminosity'] * 3.828e+26)
 
-def get_stellar_constant(star_flux, distance):
-    area = 4 * math.pi * distance**2
-    return star_flux / area
+def get_planet_temp(star, planet):
+    l_star = luminosity_to_watts(star)
+    albedo = planet['data']['AlbedoBond']
+    dist = au_to_meters(planet['data']['Orbit']['SemiMajorAxis'])
+    return ((l_star * Decimal(1 - albedo)) / (Decimal(4 * math.pi * 5.67e-8) * dist**2))**Decimal(0.25)
 
-def get_planet_temp(star_constant, albedo, greenhouse):
-    flux_absorbed = (star_constant / 4) * (1 - albedo)
-    return (flux_absorbed / 5.670367E-8)**0.25 + greenhouse + 2.725
+def create_planet(planet):
+    texture = ''
+    # assign class tuple
+    p_classes = [
+        (0, "Asteroid"),
+        (1, "Selena"),
+        (2, "IceWorld"),
+        (3, "Desert"),
+        (4, "Terra"),
+        (5, "Oceania"),
+        (6, "Titan"),
+        (7, "IceGiant"),
+        (8, "GasGiant")]
+    p_class = ''
+    for i in p_classes:
+        if planet['data']['Class'] == i[1]:
+            p_class = i
+
+    # Determine temperature
+    temp = get_planet_temp(star, planet)
+    temp_class = ''
+    if temp > 800:
+        temp_class = (0, "Scorched")
+    elif temp > 400:
+        temp_class = (1, "Hot")
+    elif temp > 300:
+        temp_class = (2, "Warm")
+    elif temp > 250:
+        temp_class = (3, "Temperate")
+    elif temp > 200:
+        temp_class = (4, "Cool")
+    elif temp > 100:
+        temo_class = (5, "Cold")
+    else:
+        temp_class = (6, "Frozen")
+
+    # Determine size
+    p_size = ''
+    if p_class[1] == "Asteroid":
+        p_size = "0-asteroid
+
+    # Configure path and select texture
+    with open("cfg templates/" + planet['data']['Class'] + ".cfg", "r") as in_file:
+        template = in_file.read()
+    if planet['type'] == 'Moon' or planet['type'] == 'DwarfMoon':
+        path = "RealSolarSystem/RSSKopernicus/" + planet['data']['ParentBody'] +'/'
+    elif planet['type'] == 'Asteroid':
+        path = "RealSolarSystem/RSSKopernicus/Asteroids/"
+    elif planet['type'] == 'Comet':
+        path = "RealSolarSystem/RSSKopernicus/Comets/"
+    else:
+        path = "RealSolarSystem/RSSKopernicus/" + planet['name'] + '/'
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
+    if idx == bin_idx + 1:
+        with open(path + "RotationPeriod.cfg", 'wt') as out_file:
+            out_file.write(rotation_period)
+
+    with open(path + planet['name'] + '.cfg', 'wt') as out_file:
+        template = template.format(
+            name=i['name'],
+            index=idx + 3,
+            SigmaBinary=sigma_binary,
+            ParentBody=check_parent(i['data']['ParentBody']),
+            SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
+            Eccentricity=i['data']['Orbit']['Eccentricity'],
+            Inclination=i['data']['Orbit']['Inclination'],
+            MeanAnomaly=i['data']['Orbit']['MeanAnomaly'],
+            AscendingNode=i['data']['Orbit']['AscendingNode'],
+            ArgOfPericenter=i['data']['Orbit']['ArgOfPericenter'],
+            red=i['data']['Color'][0],
+            green=i['data']['Color'][1],
+            blue=i['data']['Color'][2],
+            description='test',
+            Radius=radius_to_meters(i),
+            Mass=mass_to_kg(i),
+            RotationPeriod=get_rotation_period(i),
+            TidalLocked=is_tidally_locked(i),
+            HomeWorld="false")
+        out_file.write(template)
+
 
 def konvert_to_kerbal(objects, args):
     """Loads object template and formats with the correct values to create a
@@ -186,47 +268,7 @@ def konvert_to_kerbal(objects, args):
             print(sigma_binary)
 
 
-        # Configure path
-        with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
-            template = in_file.read()
-        if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
-            path = "RealSolarSystem/RSSKopernicus/" + i['data']['ParentBody'] +'/'
-        elif i['type'] == 'Asteroid':
-            path = "RealSolarSystem/RSSKopernicus/Asteroids/"
-        elif i['type'] == 'Comet':
-            path = "RealSolarSystem/RSSKopernicus/Comets/"
-        else:
-            path = "RealSolarSystem/RSSKopernicus/" + i['name'] + '/'
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if idx == bin_idx + 1:
-            with open(path + "RotationPeriod.cfg", 'wt') as out_file:
-                out_file.write(rotation_period)
-
-        with open(path + i['name'] + '.cfg', 'wt') as out_file:
-            template = template.format(
-                name=i['name'],
-                index=idx + 3,
-                SigmaBinary=sigma_binary,
-                ParentBody=check_parent(i['data']['ParentBody']),
-                SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
-                Eccentricity=i['data']['Orbit']['Eccentricity'],
-                Inclination=i['data']['Orbit']['Inclination'],
-                MeanAnomaly=i['data']['Orbit']['MeanAnomaly'],
-                AscendingNode=i['data']['Orbit']['AscendingNode'],
-                ArgOfPericenter=i['data']['Orbit']['ArgOfPericenter'],
-                red=i['data']['Color'][0],
-                green=i['data']['Color'][1],
-                blue=i['data']['Color'][2],
-                description='test',
-                Radius=radius_to_meters(i),
-                Mass=mass_to_kg(i),
-                RotationPeriod=get_rotation_period(i),
-                TidalLocked=is_tidally_locked(i),
-                HomeWorld="false")
-            out_file.write(template)
-
+ 
         if idx == bin_idx + 2:
             sigma_binary = ''
 
