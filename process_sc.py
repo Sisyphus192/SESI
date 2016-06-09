@@ -165,7 +165,39 @@ def create_planet(planet):
     # Determine size
     p_size = ''
     if p_class[1] == "Asteroid":
-        p_size = "0-asteroid
+        p_size = (0, "asteroid")
+    elif p_class[1] == "IceGiant":
+        p_size = (5, "ice_giant")
+    elif p_class[1] == "GasGiant":
+        if planet['data']['Mass'] >= 2070: # 2070 earth mass = 6.5 jupiter mass
+            p_size = (7, "super_giant")
+        else:
+            p_size = (6, "gas_giant")
+    else:
+        if planet['data']['Mass'] < 0.1:
+            p_size = (1, "dwarf")
+        elif planet['data']['Mass'] < 0.5:
+            p_size = (2, "subterra")
+        elif planet['data']['Mass'] <= 2:
+            p_size = (3, "terra")
+        else:
+            p_size = (4, "superterra")
+
+    # Tidal locking
+    t_lock = ''
+    if "TidalLocked" in planet['data']:
+        t_lock = 1
+    else:
+        t_lock = 0
+
+    # Life
+    life = ''
+    if "Life" in planet['data']:
+        life = 1
+    else:
+        life = 0
+
+
 
     # Configure path and select texture
     with open("cfg templates/" + planet['data']['Class'] + ".cfg", "r") as in_file:
