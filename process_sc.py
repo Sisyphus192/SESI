@@ -41,6 +41,7 @@ import re
 import math
 import argparse
 from sc_parser import SCParser
+import random
 
 def mass_to_kg(astro_object):
     """Takes an astronomical object and returns it's mass in kg. Will check
@@ -143,7 +144,7 @@ def create_planet(planet):
     for i in p_classes:
         if planet['data']['Class'] == i[1]:
             p_class = i
-
+    """
     # Determine temperature
     temp = get_planet_temp(star, planet)
     temp_class = ''
@@ -161,7 +162,7 @@ def create_planet(planet):
         temo_class = (5, "Cold")
     else:
         temp_class = (6, "Frozen")
-
+    """
     # Determine size
     p_size = ''
     if p_class[1] == "Asteroid":
@@ -297,10 +298,58 @@ def konvert_to_kerbal(objects, args):
 
         if idx == bin_idx + 2:
             sigma_binary = sigma_binary_cfg.format(description='test')
-            print(sigma_binary)
+            #print(sigma_binary)
 
 
- 
+        # Configure path
+        with open("cfg templates/" + i['data']['Class'] + ".cfg", "r") as in_file:
+            template = in_file.read()
+        if i['type'] == 'Moon' or i['type'] == 'DwarfMoon':
+            path = "RealSolarSystem/RSSKopernicus/" + i['data']['ParentBody'] +'/'
+        elif i['type'] == 'Asteroid':
+            path = "RealSolarSystem/RSSKopernicus/Asteroids/"
+        elif i['type'] == 'Comet':
+            path = "RealSolarSystem/RSSKopernicus/Comets/"
+        else:
+            path = "RealSolarSystem/RSSKopernicus/" + i['name'] + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if idx == bin_idx + 1:
+            with open(path + "RotationPeriod.cfg", 'wt') as out_file:
+                out_file.write(rotation_period)
+
+        with open(path + i['name'] + '.cfg', 'wt') as out_file:
+            if 'Color' in i['data'].keys():
+                temp_red = i['data']['Color'][0]
+                temp_green = i['data']['Color'][1]
+                temp_blue = i['data']['Color'][2]
+            else:
+                temp_red = random.uniform(0,1)
+                temp_green = random.uniform(0,1)
+                temp_blue = random.uniform(0,1)
+            template = template.format(
+                name=i['name'],
+                index=idx + 3,
+                SigmaBinary=sigma_binary,
+                ParentBody=check_parent(i['data']['ParentBody']),
+                SemiMajorAxis=au_to_meters(i['data']['Orbit']['SemiMajorAxis']),
+                Eccentricity=i['data']['Orbit']['Eccentricity'],
+                Inclination=i['data']['Orbit']['Inclination'],
+                MeanAnomaly=i['data']['Orbit']['MeanAnomaly'],
+                AscendingNode=i['data']['Orbit']['AscendingNode'],
+                ArgOfPericenter=i['data']['Orbit']['ArgOfPericenter'],
+                red=temp_red,
+                green=temp_green,
+                blue=temp_blue,
+                description='test',
+                Radius=radius_to_meters(i),
+                Mass=mass_to_kg(i),
+                RotationPeriod=get_rotation_period(i),
+                TidalLocked=is_tidally_locked(i),
+                HomeWorld="false")
+            out_file.write(template)
+
         if idx == bin_idx + 2:
             sigma_binary = ''
 
@@ -318,8 +367,8 @@ if __name__ == '__main__':
     PARSER.add_argument(
         "-s", dest="sc_file", action="store", help="Filename of system to parse from Space Engine")
     PARSER.add_argument(
-        "-a", dest="num_asteroids", action="store", help="Number of asteroids to include in system")
+        "-a", dest="num_asteroids", action="store", default = 6, help="Number of asteroids to include in system")
     PARSER.add_argument(
-        "-c", dest="num_comets", action="store", help="Number of comets to include in system")
+        "-c", dest="num_comets", action="store", default = 6, help="Number of comets to include in system")
     ARGS = PARSER.parse_args()
     main(ARGS)
